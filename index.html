@@ -1,0 +1,2489 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Housepoint — Coffee Shop Management</title>
+<style>
+:root {
+  --bg: #f5f6f4;
+  --white: #ffffff;
+  --ink: #1e2926;
+  --muted: #788580;
+  --line: #e3e8e5;
+  --green: #087f70;
+  --green-dark: #066559;
+  --mint: #e8f5f0;
+  --mint-light: #f1f9f6;
+  --cream: #fbf5eb;
+  --cream-dark: #f0e3cc;
+  --warn: #d97706;
+  --warn-bg: #fffbeb;
+  --red: #dc2626;
+  --red-bg: #fef2f2;
+  --shadow-sm: 0 2px 8px #13231f0a;
+  --shadow: 0 10px 30px #1d372e12;
+  --radius: 16px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* APP SHELL */
+.app { display: none; min-height: 100vh; }
+.app.logged-in { display: flex; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 255px;
+  background: var(--white);
+  border-right: 1px solid var(--line);
+  padding: 24px 16px;
+  position: fixed;
+  inset: 0 auto 0 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 20;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #d1dcda transparent;
+}
+.sidebar::-webkit-scrollbar { width: 5px; }
+.sidebar::-webkit-scrollbar-thumb { background: #d1dcda; border-radius: 10px; }
+
+.brand { padding: 4px 10px 24px; display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(135deg, var(--green), #0b9e8c);
+  color: #fff;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font: bold 22px Georgia, serif;
+  box-shadow: 0 4px 14px #087f7035;
+}
+.brand-text h1 { font: bold 20px Georgia, serif; margin: 0; letter-spacing: -0.3px; color: var(--ink); }
+.brand-text small { font-size: 8.5px; letter-spacing: 1.8px; color: var(--muted); text-transform: uppercase; display: block; margin-top: 2px; }
+
+.nav-group-title {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.6px;
+  color: #9aa8a3;
+  padding: 16px 12px 6px;
+  text-transform: uppercase;
+}
+.nav { display: flex; flex-direction: column; gap: 3px; }
+.nav button {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #55635f;
+  text-align: left;
+  padding: 11px 14px;
+  border-radius: 11px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: all 0.15s ease;
+}
+.nav button:hover { background: var(--mint-light); color: var(--green); }
+.nav button.active { background: var(--mint); color: var(--green); font-weight: 700; }
+.nav button .nav-icon { font-size: 16px; width: 20px; display: inline-grid; place-items: center; }
+
+.sidefoot {
+  margin-top: auto;
+  border-top: 1px solid var(--line);
+  padding: 16px 12px 4px;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.hermes-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 20px;
+  color: #166534;
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+.badge-dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.85); } }
+
+/* MAIN CONTENT */
+.main {
+  margin-left: 255px;
+  width: calc(100% - 255px);
+  padding: 28px 36px 60px;
+  min-height: 100vh;
+}
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 28px;
+}
+.eyebrow { font-size: 11px; letter-spacing: 1.5px; color: #889691; text-transform: uppercase; font-weight: 600; }
+.user-area { display: flex; align-items: center; gap: 14px; }
+.user-info { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; }
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--cream);
+  color: #8b641c;
+  display: grid;
+  place-items: center;
+  font-weight: bold;
+  border: 1px solid var(--cream-dark);
+}
+.btn-logout {
+  border: 1px solid var(--line);
+  background: var(--white);
+  color: #6a7772;
+  padding: 8px 14px;
+  border-radius: 9px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.btn-logout:hover { background: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+
+/* PAGES */
+.page { display: none; }
+.page.active { display: block; animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+.heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.heading h2 { font: bold 28px Georgia, serif; margin: 0 0 5px; color: var(--ink); }
+.heading p { margin: 0; color: var(--muted); font-size: 13px; }
+.heading-date { font-size: 12px; color: var(--muted); font-weight: 500; }
+
+/* GRID & CARDS */
+.grid { display: grid; gap: 18px; }
+.stats { grid-template-columns: repeat(4, minmax(0, 1fr)); margin-bottom: 20px; }
+.two-col { grid-template-columns: 1.35fr 1fr; }
+.three-col { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+.card-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+.cardtitle { font-weight: 700; font-size: 15px; margin: 0; color: var(--ink); }
+.cardsub { font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+
+.stathead { font-size: 12px; color: #62706a; display: flex; gap: 10px; align-items: center; font-weight: 600; }
+.staticon {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  background: var(--mint);
+  display: grid;
+  place-items: center;
+  font-size: 17px;
+  color: var(--green);
+}
+.statvalue { font-size: 27px; font-weight: 750; margin: 14px 0 4px; letter-spacing: -0.8px; color: var(--ink); }
+.trend { font-size: 11px; color: var(--green); font-weight: 600; }
+.trend.neg { color: var(--red); }
+.muted { color: var(--muted); }
+
+/* BUTTONS */
+.btn {
+  border: 0;
+  border-radius: 10px;
+  background: var(--green);
+  color: #fff;
+  padding: 10px 18px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 8px #087f7025;
+}
+.btn:hover { background: var(--green-dark); transform: translateY(-1px); }
+.btn.light { background: var(--cream); color: #88641e; border: 1px solid var(--cream-dark); box-shadow: none; }
+.btn.light:hover { background: #f3e5ce; }
+.btn.sm { padding: 6px 11px; font-size: 11px; border-radius: 8px; }
+.btn.danger { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; box-shadow: none; }
+.btn.danger:hover { background: #fecaca; }
+
+/* TOOLBAR & FILTERS */
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.filter-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+.filter-pill {
+  border: 1px solid var(--line);
+  background: var(--white);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #62706a;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.filter-pill:hover, .filter-pill.active { background: var(--mint); color: var(--green); border-color: #bbf7d0; }
+.search-input {
+  border: 1px solid var(--line);
+  background: var(--white);
+  border-radius: 10px;
+  padding: 9px 13px;
+  font-size: 12.5px;
+  outline-color: var(--green);
+  width: 240px;
+}
+
+/* TABLES */
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; }
+table { width: 100%; border-collapse: collapse; min-width: 600px; font-size: 12.5px; }
+th { background: #f8faf8; color: #6e7d77; text-align: left; font-size: 10.5px; letter-spacing: 0.8px; padding: 13px 15px; font-weight: 700; text-transform: uppercase; }
+td { padding: 13px 15px; border-top: 1px solid var(--line); vertical-align: middle; }
+tr:hover td { background: #fafcfa; }
+
+/* PILLS / BADGES */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--mint);
+  color: var(--green);
+  font-size: 10.5px;
+  font-weight: 700;
+}
+.pill.warn { background: var(--warn-bg); color: var(--warn); }
+.pill.red { background: var(--red-bg); color: var(--red); }
+.pill.btn-toggle { cursor: pointer; transition: transform 0.1s ease; }
+.pill.btn-toggle:hover { transform: scale(1.05); }
+
+/* PRODUCT GRID */
+.productgrid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); }
+.product-card {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.product-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px #1d372e18; }
+.product-img {
+  height: 125px;
+  display: grid;
+  place-items: center;
+  font-size: 52px;
+  background: linear-gradient(135deg, #e7f3ec, #fbf2e3);
+  position: relative;
+}
+.product-cat-tag {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+}
+.product-body { padding: 16px; flex: 1; display: flex; flex-direction: column; }
+.product-body h3 { margin: 0 0 6px; font-size: 15px; font-weight: 700; color: var(--ink); }
+.product-desc { font-size: 11.5px; color: var(--muted); line-height: 1.5; margin-bottom: 12px; flex: 1; }
+.product-foot { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 10px; border-top: 1px solid var(--line); }
+.product-price { font-size: 15px; font-weight: 800; color: var(--green); }
+.btn-delete-card { background: transparent; border: 0; color: #a1ada8; cursor: pointer; font-size: 15px; padding: 4px 6px; border-radius: 6px; }
+.btn-delete-card:hover { color: var(--red); background: var(--red-bg); }
+
+/* CHART & METRICS */
+.chart {
+  height: 215px;
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  padding: 15px 8px 0;
+  border-bottom: 1px solid var(--line);
+  background: repeating-linear-gradient(to bottom, transparent 0, transparent 53px, #f0f3f0 54px);
+}
+.barwrap { height: 100%; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 8px; }
+.bar { width: min(34px, 75%); border-radius: 7px 7px 2px 2px; background: linear-gradient(180deg, #20a58e, var(--green)); transition: height 0.3s ease; }
+.barlabel { font-size: 10.5px; color: var(--muted); padding-bottom: 7px; font-weight: 600; }
+.checkrow { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--line); font-size: 12.5px; }
+.checkrow:last-child { border: 0; }
+.progress-bar { height: 7px; background: #edf1ed; border-radius: 20px; overflow: hidden; margin-top: 6px; }
+.progress-bar i { display: block; height: 100%; background: var(--green); border-radius: 20px; }
+
+/* SALES FUNNEL */
+.funnel-box { padding: 24px; }
+.funnel-tier-wrapper { display: flex; justify-content: center; width: 100%; margin: 0 auto 8px; }
+.funnel-tier {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px clamp(14px, 2vw, 28px);
+  color: #fff;
+  background: linear-gradient(105deg, var(--green), #48b69b);
+  clip-path: polygon(3.5% 0, 96.5% 0, 100% 100%, 0 100%);
+  box-shadow: 0 4px 14px #087f7015;
+  transition: width 0.25s ease;
+}
+.funnel-tier .tier-stage { font-size: 12.5px; font-weight: 700; }
+.funnel-tier strong { font-size: 15px; }
+.funnel-tier .tier-rate { font-size: 10.5px; opacity: 0.95; }
+.funnel-tier-wrapper:nth-child(2) .funnel-tier { background: linear-gradient(105deg, #118a78, #55b99e); }
+.funnel-tier-wrapper:nth-child(3) .funnel-tier { background: linear-gradient(105deg, #21977f, #64c0a5); }
+.funnel-tier-wrapper:nth-child(4) .funnel-tier { background: linear-gradient(105deg, #329f85, #77c8a9); }
+.funnel-tier-wrapper:nth-child(5) .funnel-tier { background: linear-gradient(105deg, #4aaa8e, #8bd0b2); }
+.funnel-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 18px; }
+.funnel-metric-card { border: 1px solid var(--line); border-radius: 12px; padding: 14px; background: #fafbfa; }
+.funnel-metric-card strong { font-size: 20px; display: block; margin: 4px 0; color: var(--green); }
+.funnel-metric-card span { font-size: 11px; color: var(--muted); }
+
+/* MODALS */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #13231f66;
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(2px);
+}
+.modal-overlay.show { display: flex; animation: modalIn 0.2s ease; }
+@keyframes modalIn { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
+.modal-window {
+  background: var(--white);
+  border-radius: 20px;
+  padding: 26px 28px;
+  width: min(480px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px #11282230;
+}
+.modal-window h3 { margin: 0 0 6px; font: bold 22px Georgia, serif; color: var(--ink); }
+.modal-window p { margin: 0 0 20px; font-size: 12.5px; color: var(--muted); }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; font-size: 11.5px; font-weight: 700; color: #43514c; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.form-group input, .form-group select, .form-group textarea {
+  display: block;
+  width: 100%;
+  padding: 10px 13px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 13px;
+  outline-color: var(--green);
+  background: var(--white);
+  font-family: inherit;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--green); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; padding-top: 14px; border-top: 1px solid var(--line); }
+
+/* TOAST NOTIFICATION */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #1e2926;
+  color: #fff;
+  padding: 12px 22px;
+  border-radius: 30px;
+  font-size: 12.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 1000;
+  box-shadow: 0 10px 30px #00000030;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  opacity: 0;
+  pointer-events: none;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+/* HOUSEPOINT AI CHAT */
+.ai-chat-launcher {
+  position: fixed;
+  right: 25px;
+  bottom: 25px;
+  z-index: 50;
+  width: 60px;
+  height: 60px;
+  border: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--green), #0b9e8c);
+  color: #fff;
+  font-size: 26px;
+  box-shadow: 0 10px 30px #087f7045;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: grid;
+  place-items: center;
+}
+.ai-chat-launcher:hover { transform: translateY(-3px) scale(1.03); box-shadow: 0 14px 38px #087f7055; }
+.ai-launcher-pulse {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 14px;
+  height: 14px;
+  background: #22c55e;
+  border: 2px solid #fff;
+  border-radius: 50%;
+}
+.ai-chat-panel {
+  position: fixed;
+  right: 25px;
+  bottom: 96px;
+  z-index: 50;
+  width: min(410px, calc(100vw - 32px));
+  height: min(580px, calc(100vh - 120px));
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px #13231f30;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+  animation: chatUp 0.2s ease;
+}
+@keyframes chatUp { from { opacity: 0; transform: translateY(12px) scale(0.97); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.ai-chat-panel.open { display: flex; }
+.ai-chat-head {
+  background: linear-gradient(110deg, #075f55, #0c8876);
+  color: #fff;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ai-chat-head strong { display: block; font: bold 17px Georgia, serif; }
+.ai-chat-head small { display: flex; align-items: center; gap: 6px; margin-top: 3px; color: #d9eee7; font-size: 10.5px; }
+.ai-chat-close {
+  border: 0;
+  background: #ffffff25;
+  color: #fff;
+  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  font-size: 19px;
+  cursor: pointer;
+}
+.ai-chat-close:hover { background: #ffffff35; }
+.ai-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  background: #f7f9f7;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.ai-message {
+  max-width: 88%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ai-message.bot {
+  align-self: flex-start;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-top-left-radius: 4px;
+  color: var(--ink);
+  box-shadow: 0 1px 4px #00000008;
+}
+.ai-message.user {
+  align-self: flex-end;
+  background: var(--green);
+  color: #fff;
+  border-top-right-radius: 4px;
+  box-shadow: 0 2px 8px #087f7030;
+}
+.ai-message.error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+.ai-chat-suggestions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 10px 14px 6px;
+  background: #fff;
+  border-top: 1px solid #f0f3f0;
+}
+.ai-chat-suggestions button {
+  border: 1px solid #dce8e1;
+  background: #f8fbf8;
+  color: #287568;
+  border-radius: 20px;
+  padding: 6px 11px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.ai-chat-suggestions button:hover { background: var(--mint); border-color: #bbf7d0; }
+.ai-typing { font-size: 11px; color: var(--muted); padding: 4px 16px 8px; background: #fff; font-style: italic; }
+.ai-chat-form { display: flex; gap: 8px; padding: 12px 14px; border-top: 1px solid var(--line); background: #fff; }
+.ai-chat-input {
+  min-width: 0;
+  flex: 1;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  padding: 10px 13px;
+  font-size: 12.5px;
+  outline-color: var(--green);
+}
+.ai-chat-send {
+  border: 0;
+  border-radius: 10px;
+  background: var(--green);
+  color: #fff;
+  padding: 0 18px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.ai-chat-send:disabled { opacity: 0.55; cursor: wait; }
+
+/* LOGIN SCREEN */
+.login-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #edf5f0 0%, #f8f1e5 100%);
+}
+.login-shell {
+  width: min(940px, 100%);
+  min-height: 570px;
+  background: #fff;
+  border: 1px solid #e8ece8;
+  border-radius: 24px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  box-shadow: 0 22px 70px #1d372e18;
+}
+.login-visual {
+  background: linear-gradient(145deg, #075f55, #0c8876 58%, #8bb7a0);
+  color: #fff;
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+.login-visual:before, .login-visual:after {
+  content: "";
+  position: absolute;
+  border: 1px solid #ffffff30;
+  border-radius: 50%;
+  width: 340px;
+  height: 340px;
+  right: -110px;
+  top: 90px;
+}
+.login-visual:after { width: 230px; height: 230px; right: -55px; top: 145px; }
+.login-brand { font: bold 32px Georgia, serif; position: relative; z-index: 1; }
+.login-brand span { display: block; font: 10px sans-serif; letter-spacing: 3px; margin-top: 7px; opacity: 0.8; }
+.login-quote { position: relative; z-index: 1; max-width: 330px; }
+.login-quote h2 { font: bold 36px Georgia, serif; line-height: 1.15; margin: 0 0 14px; }
+.login-quote p { font-size: 13px; line-height: 1.8; color: #e1f1e9; margin: 0; }
+.login-coffee { font-size: 85px; opacity: 0.18; position: absolute; right: 38px; bottom: 80px; transform: rotate(-12deg); }
+.login-form-side { padding: 48px 46px; display: flex; flex-direction: column; justify-content: center; }
+.login-form-side h2 { font: bold 28px Georgia, serif; margin: 0 0 6px; }
+.login-sub { font-size: 13px; color: var(--muted); margin: 0 0 24px; }
+.login-label { display: block; font-size: 11px; font-weight: 700; color: #53615b; margin: 12px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+.login-input-wrap { position: relative; margin-top: 6px; }
+.login-input {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 13px;
+  outline-color: var(--green);
+}
+.password-toggle { position: absolute; right: 10px; top: 13px; border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 11px; font-weight: 600; }
+.login-options { display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: var(--muted); margin: 6px 0 20px; }
+.login-options label { display: flex; gap: 7px; align-items: center; cursor: pointer; }
+.login-submit {
+  width: 100%;
+  border: 0;
+  border-radius: 10px;
+  background: var(--green);
+  color: white;
+  padding: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 13.5px;
+  box-shadow: 0 4px 14px #087f7030;
+}
+.login-submit:hover { background: var(--green-dark); }
+.login-error { display: none; color: #b94d45; background: #fff0ee; border-radius: 8px; padding: 10px 12px; font-size: 11px; margin-bottom: 12px; }
+.login-demo { margin-top: 18px; padding: 12px 14px; border-radius: 10px; background: #f7faf7; color: #68756f; font-size: 11px; line-height: 1.7; border: 1px solid #e7efe9; }
+.login-demo b { color: var(--green); }
+.login-foot { text-align: center; color: #9aa39e; font-size: 10px; margin-top: 22px; }
+
+/* RESPONSIVE */
+@media(max-width: 1050px) {
+  .sidebar { width: 220px; }
+  .main { margin-left: 220px; width: calc(100% - 220px); padding: 22px; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+  .two-col { grid-template-columns: 1fr; }
+}
+@media(max-width: 760px) {
+  .sidebar { position: static; width: 100%; height: auto; padding: 12px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .app { display: block; }
+  .nav { flex-direction: row; overflow-x: auto; padding-bottom: 6px; }
+  .nav button { white-space: nowrap; width: auto; padding: 8px 12px; }
+  .nav-group-title, .sidefoot { display: none; }
+  .main { margin: 0; width: 100%; padding: 18px; }
+  .login-shell { grid-template-columns: 1fr; }
+  .login-visual { padding: 30px; min-height: 200px; }
+  .login-form-side { padding: 32px 24px; }
+  .ai-chat-launcher { right: 16px; bottom: 16px; }
+  .ai-chat-panel { right: 10px; bottom: 84px; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<section class="login-screen" id="loginScreen">
+  <div class="login-shell">
+    <div class="login-visual">
+      <div class="login-brand">housepoint.<span>COFFEE SHOP MANAGEMENT</span></div>
+      <div class="login-quote">
+        <h2>Good coffee.<br>Better moments.</h2>
+        <p>Kelola pesanan, stok bahan baku, katalog menu, dan operasional kedai kopi Housepoint dengan terintegrasi.</p>
+      </div>
+      <div class="login-coffee">☕</div>
+    </div>
+    <div class="login-form-side">
+      <h2>Selamat Datang</h2>
+      <p class="login-sub">Masuk ke panel administrator Housepoint Coffee.</p>
+      <form id="loginForm">
+        <label class="login-label">Email Administrator
+          <div class="login-input-wrap">
+            <input class="login-input" id="loginEmail" type="email" placeholder="admin@housepoint.com" required autocomplete="username">
+          </div>
+        </label>
+        <label class="login-label">Password
+          <div class="login-input-wrap">
+            <input class="login-input" id="loginPassword" type="password" placeholder="Masukkan password" required autocomplete="current-password">
+            <button class="password-toggle" type="button" onclick="togglePassword()">Lihat</button>
+          </div>
+        </label>
+        <div class="login-options">
+          <label><input type="checkbox" id="rememberLogin" checked> Ingat saya</label>
+          <span>Admin Access</span>
+        </div>
+        <div class="login-error" id="loginError">Email atau password belum sesuai. Silakan gunakan akun demo di bawah.</div>
+        <button class="login-submit" type="submit">Masuk ke Dashboard &nbsp;→</button>
+      </form>
+      <div class="login-demo">
+        <b>Akun Demo Administrator:</b><br>
+        Email: <code>admin@housepoint.com</code><br>
+        Password: <code>housepoint123</code>
+      </div>
+      <div class="login-foot">© 2026 Housepoint Coffee Shop · Admin Panel</div>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN APP -->
+<div class="app" id="mainApp">
+  <!-- SIDEBAR NAVIGATION -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">H</div>
+      <div class="brand-text">
+        <h1>housepoint.</h1>
+        <small>Coffee Management</small>
+      </div>
+    </div>
+
+    <div class="nav-group-title">WORKSPACE</div>
+    <div class="nav">
+      <button class="active" data-page="dashboard"><span class="nav-icon">▦</span>Dashboard</button>
+      <button data-page="funnel"><span class="nav-icon">▽</span>Sales Funneling</button>
+      <button data-page="reports"><span class="nav-icon">↗</span>Reports & Sales</button>
+    </div>
+
+    <div class="nav-group-title">OPERASIONAL KEDAI</div>
+    <div class="nav">
+      <button data-page="menu"><span class="nav-icon">☕</span>Menu Management</button>
+      <button data-page="orders"><span class="nav-icon">🧾</span>Orders & Kasir</button>
+      <button data-page="inventory"><span class="nav-icon">▤</span>Inventory & Stok</button>
+      <button data-page="expenses"><span class="nav-icon">📦</span>Pengeluaran</button>
+    </div>
+
+    <div class="nav-group-title">TIM & PELANGGAN</div>
+    <div class="nav">
+      <button data-page="staff"><span class="nav-icon">👥</span>Staff & Roster</button>
+      <button data-page="loyalty"><span class="nav-icon">★</span>Loyalty & Member</button>
+      <button data-page="settings"><span class="nav-icon">⚙</span>Settings</button>
+    </div>
+
+    <div class="sidefoot">
+      <div>Housepoint v1.1</div>
+      <div class="hermes-badge" id="sidebarHermesBadge" title="Status koneksi ke Hermes AI">
+        <span class="badge-dot"></span>
+        <span id="sidebarHermesText">Hermes AI Online</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEW -->
+  <main class="main">
+    <header class="topbar">
+      <div class="eyebrow">COFFEE SHOP MANAGEMENT SYSTEM</div>
+      <div class="user-area">
+        <div class="user-info">
+          <div class="avatar">H</div>
+          <span>Administrator</span>
+        </div>
+        <button class="btn-logout" onclick="logout()">Keluar ↗</button>
+      </div>
+    </header>
+
+    <!-- 1. DASHBOARD -->
+    <section class="page active" id="dashboard">
+      <div class="heading">
+        <div>
+          <h2>Dashboard</h2>
+          <p>Selamat datang! Berikut ringkasan performa dan operasional Housepoint hari ini.</p>
+        </div>
+        <span class="heading-date" id="todayDate"></span>
+      </div>
+
+      <div class="grid stats">
+        <div class="card">
+          <div class="stathead"><span class="staticon">💰</span>Total Pendapatan</div>
+          <div class="statvalue" id="dashTotalRevenue">Rp 0</div>
+          <div class="trend">↑ 12,8% <span class="muted">vs minggu lalu</span></div>
+        </div>
+        <div class="card">
+          <div class="stathead"><span class="staticon">🧾</span>Total Pesanan</div>
+          <div class="statvalue" id="dashTotalOrders">0</div>
+          <div class="trend">↑ 8,4% <span class="muted">hari ini</span></div>
+        </div>
+        <div class="card">
+          <div class="stathead"><span class="staticon">☕</span>Menu Tersedia</div>
+          <div class="statvalue" id="dashTotalMenus">0</div>
+          <div class="muted" style="font-size:11px">Item aktif di katalog</div>
+        </div>
+        <div class="card">
+          <div class="stathead"><span class="staticon">▤</span>Stok Menipis</div>
+          <div class="statvalue" id="dashLowStockCount" style="color:var(--warn)">0</div>
+          <div class="trend neg" style="color:var(--warn)">Perlu restock segera</div>
+        </div>
+      </div>
+
+      <div class="grid two-col">
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3 class="cardtitle">Sales Overview</h3>
+              <div class="cardsub">Tren pendapatan 7 hari terakhir (dalam juta rupiah)</div>
+            </div>
+          </div>
+          <div class="chart" id="dashChart"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3 class="cardtitle">Menu Terlaris (Popular)</h3>
+              <div class="cardsub">Paling banyak dipesan pelanggan</div>
+            </div>
+          </div>
+          <div id="popularMenuList">
+            <div class="checkrow"><span>🧋 Iced Aren Latte</span><b>82 terjual</b></div>
+            <div class="progress-bar"><i style="width:85%"></i></div>
+            <div class="checkrow"><span>🥛 Spanish Latte</span><b>64 terjual</b></div>
+            <div class="progress-bar"><i style="width:68%"></i></div>
+            <div class="checkrow"><span>🍵 Matcha Cream Latte</span><b>51 terjual</b></div>
+            <div class="progress-bar"><i style="width:55%"></i></div>
+            <div class="checkrow"><span>☕ Americano</span><b>38 terjual</b></div>
+            <div class="progress-bar"><i style="width:40%"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:20px">
+        <div class="card-head">
+          <div>
+            <h3 class="cardtitle">Pesanan Terbaru (Recent Orders)</h3>
+            <div class="cardsub">Daftar transaksi kasir yang baru saja tercatat</div>
+          </div>
+          <button class="btn sm light" onclick="showPage('orders')">Buka Halaman Kasir →</button>
+        </div>
+        <div class="tablewrap">
+          <table id="dashRecentOrdersTable">
+            <thead>
+              <tr>
+                <th>ORDER ID</th>
+                <th>PELANGGAN</th>
+                <th>MENU PESANAN</th>
+                <th>TOTAL</th>
+                <th>PEMBAYARAN</th>
+                <th>STATUS</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. SALES FUNNELING -->
+    <section class="page" id="funnel">
+      <div class="heading">
+        <div>
+          <h2>Sales Funneling</h2>
+          <p>Analisis piramida konversi pelanggan dari kunjungan hingga pembayaran berhasil.</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <select class="form-group" id="funnelPeriod" onchange="updateFunnelUI()" style="margin:0;padding:8px 12px">
+            <option value="today">Hari ini</option>
+            <option value="week" selected>7 Hari Terakhir</option>
+            <option value="month">30 Hari Terakhir</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid stats">
+        <div class="card">
+          <div class="stathead">Pengunjung Kedai</div>
+          <div class="statvalue" id="funnelVisitors">0</div>
+          <div class="muted" style="font-size:11px">Estimasi traffic store</div>
+        </div>
+        <div class="card">
+          <div class="stathead">Transaksi Berhasil</div>
+          <div class="statvalue" id="funnelOrders">0</div>
+          <div class="trend">Kasir & online order</div>
+        </div>
+        <div class="card">
+          <div class="stathead">Overall Conversion</div>
+          <div class="statvalue" id="funnelConversion">0%</div>
+          <div class="muted" style="font-size:11px">Transaksi ÷ pengunjung</div>
+        </div>
+        <div class="card">
+          <div class="stathead">Drop-off Rate</div>
+          <div class="statvalue" id="funnelDropoff" style="color:var(--warn)">0%</div>
+          <div class="muted" style="font-size:11px">Pengunjung tanpa beli</div>
+        </div>
+      </div>
+
+      <div class="card funnel-box">
+        <h3 class="cardtitle">Piramida Konversi Pelanggan (Funnel)</h3>
+        <div class="cardsub" style="margin-bottom:20px">Tingkat retensi pengunjung pada setiap tahapan pembelian.</div>
+        <div id="funnelRows"></div>
+        <div class="funnel-metrics">
+          <div class="funnel-metric-card">
+            <span>Pengunjung → Lihat Menu</span>
+            <strong id="metricMenuRate">0%</strong>
+            <span>Daya tarik visual menu & banner</span>
+          </div>
+          <div class="funnel-metric-card">
+            <span>Lihat Menu → Keranjang / Pesan</span>
+            <strong id="metricCartRate">0%</strong>
+            <span>Keputusan memilih varian</span>
+          </div>
+          <div class="funnel-metric-card">
+            <span>Kasir / Checkout → Bayar</span>
+            <strong id="metricPayRate">0%</strong>
+            <span>Kemudahan opsi bayar (QRIS/Cash)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. REPORTS & SALES -->
+    <section class="page" id="reports">
+      <div class="heading">
+        <div>
+          <h2>Reports & Analytics</h2>
+          <p>Laporan analisis pendapatan dan statistik penjualan Housepoint.</p>
+        </div>
+        <button class="btn light" onclick="window.print()">🖨 Cetak Laporan</button>
+      </div>
+
+      <div class="grid two-col">
+        <div class="card">
+          <h3 class="cardtitle">Distribusi Kategori Penjualan</h3>
+          <div class="cardsub">Porsi omset berdasarkan kelompok produk</div>
+          <div class="checkrow"><span>☕ Coffee (Espresso based)</span><b>62% (Rp 5.240.000)</b></div>
+          <div class="progress-bar"><i style="width:62%"></i></div>
+          <div class="checkrow"><span>🍵 Non-Coffee & Milk Tea</span><b>25% (Rp 2.110.000)</b></div>
+          <div class="progress-bar"><i style="width:25%"></i></div>
+          <div class="checkrow"><span>🥐 Pastry & Bakery</span><b>13% (Rp 1.100.000)</b></div>
+          <div class="progress-bar"><i style="width:13%"></i></div>
+        </div>
+
+        <div class="card">
+          <h3 class="cardtitle">Key Business Insights</h3>
+          <div class="cardsub">Catatan operasional periode berjalan</div>
+          <div class="checkrow"><span>Rata-rata Transaksi (AOV)</span><b>Rp 45.500</b></div>
+          <div class="checkrow"><span>Jam Tersibuk (Peak Hour)</span><b>14.00 – 16.30 WIB</b></div>
+          <div class="checkrow"><span>Metode Bayar Terbanyak</span><b>QRIS (68%)</b></div>
+          <div class="checkrow"><span>Tingkat Repeat Customer</span><b>38,5%</b></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:20px">
+        <h3 class="cardtitle">Grafik Pendapatan Mingguan</h3>
+        <div class="cardsub">Omset harian dalam 7 hari terakhir</div>
+        <div class="chart" id="reportsChart"></div>
+      </div>
+    </section>
+
+    <!-- 4. MENU MANAGEMENT -->
+    <section class="page" id="menu">
+      <div class="heading">
+        <div>
+          <h2>Menu Management</h2>
+          <p>Kelola katalog produk minuman kopi, non-kopi, dan pastry Housepoint.</p>
+        </div>
+        <button class="btn" onclick="openMenuModal()">＋ Tambah Menu Baru</button>
+      </div>
+
+      <div class="toolbar">
+        <div class="filter-pills" id="menuCatFilters">
+          <button class="filter-pill active" onclick="filterMenuCategory('All')">Semua Menu</button>
+          <button class="filter-pill" onclick="filterMenuCategory('Coffee')">☕ Coffee</button>
+          <button class="filter-pill" onclick="filterMenuCategory('Non-Coffee')">🍵 Non-Coffee</button>
+          <button class="filter-pill" onclick="filterMenuCategory('Pastry')">🥐 Pastry</button>
+        </div>
+        <input class="search-input" id="menuSearchInput" placeholder="Cari nama menu..." oninput="renderMenuList()">
+      </div>
+
+      <div class="grid productgrid" id="menuGridContainer"></div>
+    </section>
+
+    <!-- 5. ORDERS & KASIR -->
+    <section class="page" id="orders">
+      <div class="heading">
+        <div>
+          <h2>Orders & Transaksi Kasir</h2>
+          <p>Pencatatan pesanan baru pelanggan dan pemantauan status penyajian.</p>
+        </div>
+        <button class="btn" onclick="openOrderModal()">＋ Catat Pesanan Baru</button>
+      </div>
+
+      <div class="toolbar">
+        <div class="filter-pills">
+          <button class="filter-pill active" id="orderFilterAll" onclick="filterOrderStatus('All')">Semua Pesanan</button>
+          <button class="filter-pill" id="orderFilterPrep" onclick="filterOrderStatus('Preparing')">⏳ Sedang Disiapkan</button>
+          <button class="filter-pill" id="orderFilterComp" onclick="filterOrderStatus('Completed')">✓ Selesai</button>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="btn sm light" onclick="syncAllOrders()" title="Kirim semua pesanan ke Google Sheets">⚡ Sync ke Spreadsheet</button>
+          <input class="search-input" id="orderSearchInput" placeholder="Cari pelanggan / order ID..." oninput="renderOrdersTable()">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="tablewrap">
+          <table id="mainOrdersTable">
+            <thead>
+              <tr>
+                <th>ORDER ID</th>
+                <th>PELANGGAN</th>
+                <th>WAKTU</th>
+                <th>DETAIL PESANAN</th>
+                <th>TIPE</th>
+                <th>TOTAL</th>
+                <th>METODE BAYAR</th>
+                <th>STATUS</th>
+                <th>SPREADSHEET</th>
+                <th style="text-align:right">AKSI</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. INVENTORY & STOK -->
+    <section class="page" id="inventory">
+      <div class="heading">
+        <div>
+          <h2>Inventory & Stok Bahan Baku</h2>
+          <p>Pantau persediaan biji kopi, susu, sirup, dan perlengkapan kedai.</p>
+        </div>
+        <button class="btn" onclick="openInventoryModal()">＋ Tambah Bahan Baku</button>
+      </div>
+
+      <div class="grid stats">
+        <div class="card">
+          <div class="stathead">Total Jenis Bahan</div>
+          <div class="statvalue" id="invTotalItems">0</div>
+          <div class="muted" style="font-size:11px">Bahan baku & packaging</div>
+        </div>
+        <div class="card">
+          <div class="stathead">Stok Menipis (Low)</div>
+          <div class="statvalue" id="invLowCount" style="color:var(--warn)">0</div>
+          <div class="trend" style="color:var(--warn)">Perlu dipesan ulang</div>
+        </div>
+        <div class="card">
+          <div class="stathead">Stok Habis</div>
+          <div class="statvalue" id="invZeroCount" style="color:var(--red)">0</div>
+          <div class="trend neg">Out of Stock</div>
+        </div>
+        <div class="card">
+          <div class="stathead">Estimasi Nilai Stok</div>
+          <div class="statvalue">Rp 6,4 jt</div>
+          <div class="muted" style="font-size:11px">Aset bahan baku aktif</div>
+        </div>
+      </div>
+
+      <div class="toolbar">
+        <span class="muted" style="font-size:12px;font-weight:600">Daftar Bahan Baku:</span>
+        <input class="search-input" id="invSearchInput" placeholder="Cari nama bahan / kategori..." oninput="renderInventoryTable()">
+      </div>
+
+      <div class="card">
+        <div class="tablewrap">
+          <table id="mainInventoryTable">
+            <thead>
+              <tr>
+                <th>NAMA BAHAN</th>
+                <th>KATEGORI</th>
+                <th>JUMLAH STOK</th>
+                <th>BATAS MINIMUM</th>
+                <th>STATUS</th>
+                <th>TERAKHIR DIPERBARUI</th>
+                <th style="text-align:right">RESTOCK CEPAT / AKSI</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. EXPENSES -->
+    <section class="page" id="expenses">
+      <div class="heading">
+        <div>
+          <h2>Pengeluaran Operasional (Expenses)</h2>
+          <p>Catat pengeluaran harian kedai kopi untuk mengontrol arus kas (cashflow).</p>
+        </div>
+        <button class="btn" onclick="openExpenseModal()">＋ Catat Pengeluaran</button>
+      </div>
+
+      <div class="grid stats">
+        <div class="card">
+          <div class="stathead">Total Pengeluaran</div>
+          <div class="statvalue" id="totalExpenseVal">Rp 0</div>
+          <div class="muted" style="font-size:11px">Bulan berjalan</div>
+        </div>
+        <div class="card">
+          <div class="stathead">Bahan Baku</div>
+          <div class="statvalue" id="expRawVal">Rp 0</div>
+          <div class="muted" style="font-size:11px">Kopi, susu, sirup</div>
+        </div>
+        <div class="card">
+          <div class="stathead">Operasional</div>
+          <div class="statvalue" id="expOpsVal">Rp 0</div>
+          <div class="muted" style="font-size:11px">Es, sedotan, cleaning</div>
+        </div>
+        <div class="card">
+          <div class="stathead">Utilitas & Listrik</div>
+          <div class="statvalue" id="expUtilVal">Rp 0</div>
+          <div class="muted" style="font-size:11px">Listrik, air, WiFi</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h3 class="cardtitle">Riwayat Pengeluaran</h3>
+        </div>
+        <div class="tablewrap">
+          <table id="expensesTable">
+            <thead>
+              <tr>
+                <th>TANGGAL</th>
+                <th>KEPERLUAN / PENGELUARAN</th>
+                <th>KATEGORI</th>
+                <th>NOMINAL</th>
+                <th style="text-align:right">AKSI</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. STAFF & ROSTER (SIMPLIFIED & CLEAN) -->
+    <section class="page" id="staff">
+      <div class="heading">
+        <div>
+          <h2>Staff & Barista Roster</h2>
+          <p>Jadwal shift kerja barista dan kasir Housepoint (Ringkasan Tim).</p>
+        </div>
+      </div>
+
+      <div class="grid stats">
+        <div class="card">
+          <div class="stathead">Total Karyawan</div>
+          <div class="statvalue">6</div>
+          <div class="muted" style="font-size:11px">Barista & Kasir</div>
+        </div>
+        <div class="card">
+          <div class="stathead">Sedang Bertugas</div>
+          <div class="statvalue" style="color:var(--green)">3</div>
+          <div class="trend">Morning Shift</div>
+        </div>
+        <div class="card">
+          <div class="stathead">Shift Siang / Sore</div>
+          <div class="statvalue">3</div>
+          <div class="muted" style="font-size:11px">Mulai 14.00 WIB</div>
+        </div>
+        <div class="card">
+          <div class="stathead">Tingkat Kehadiran</div>
+          <div class="statvalue">100%</div>
+          <div class="trend">Bulan ini</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 class="cardtitle" style="margin-bottom:14px">Jadwal Shift Hari Ini</h3>
+        <div class="tablewrap">
+          <table>
+            <thead>
+              <tr>
+                <th>NAMA STAF</th>
+                <th>POSISI</th>
+                <th>SHIFT</th>
+                <th>JAM KERJA</th>
+                <th>STATUS KEHADIRAN</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Aditya Pratama</strong></td>
+                <td>Head Barista</td>
+                <td>Pagi (Morning)</td>
+                <td>07.30 – 15.30 WIB</td>
+                <td><span class="pill">Bertugas (On Duty)</span></td>
+              </tr>
+              <tr>
+                <td><strong>Sarah Amelia</strong></td>
+                <td>Barista</td>
+                <td>Pagi (Morning)</td>
+                <td>07.30 – 15.30 WIB</td>
+                <td><span class="pill">Bertugas (On Duty)</span></td>
+              </tr>
+              <tr>
+                <td><strong>Kevin Wijaya</strong></td>
+                <td>Cashier / Kasir</td>
+                <td>Pagi (Morning)</td>
+                <td>07.30 – 15.30 WIB</td>
+                <td><span class="pill">Bertugas (On Duty)</span></td>
+              </tr>
+              <tr>
+                <td><strong>Fajar Ramadhan</strong></td>
+                <td>Senior Barista</td>
+                <td>Sore (Evening)</td>
+                <td>14.30 – 22.30 WIB</td>
+                <td><span class="pill warn">Shift Sore</span></td>
+              </tr>
+              <tr>
+                <td><strong>Putri Ananda</strong></td>
+                <td>Barista</td>
+                <td>Sore (Evening)</td>
+                <td>14.30 – 22.30 WIB</td>
+                <td><span class="pill warn">Shift Sore</span></td>
+              </tr>
+              <tr>
+                <td><strong>Dion Prasetyo</strong></td>
+                <td>Barista & Roaster</td>
+                <td>Off / Libur</td>
+                <td>—</td>
+                <td><span class="pill">Libur Terjadwal</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. LOYALTY & MEMBER (SIMPLIFIED & CLEAN) -->
+    <section class="page" id="loyalty">
+      <div class="heading">
+        <div>
+          <h2>Loyalty Program & Pelanggan</h2>
+          <p>Katalog reward poin dan program apresiasi member Housepoint.</p>
+        </div>
+      </div>
+
+      <div class="grid three-col">
+        <div class="card">
+          <div class="stathead">Poin Member Beredar</div>
+          <div class="statvalue">24.850</div>
+          <div class="muted" style="font-size:11px">Dari 642 member aktif</div>
+        </div>
+        <div class="card">
+          <div class="stathead">Reward Ditukarkan</div>
+          <div class="statvalue">186</div>
+          <div class="trend">Bulan berjalan</div>
+        </div>
+        <div class="card">
+          <div class="stathead">VIP Tier Members</div>
+          <div class="statvalue">84</div>
+          <div class="muted" style="font-size:11px">Gold & Platinum tier</div>
+        </div>
+      </div>
+
+      <div class="grid two-col" style="margin-top:20px">
+        <div class="card">
+          <h3 class="cardtitle">Katalog Reward Penukaran Poin</h3>
+          <div class="cardsub">Pilihan reward yang dapat ditukarkan pelanggan</div>
+          <div class="checkrow"><span>☕ Free Iced Americano</span><b>100 Poin</b></div>
+          <div class="checkrow"><span>🥐 Free Butter Croissant</span><b>150 Poin</b></div>
+          <div class="checkrow"><span>🧋 Free Iced Aren Latte</span><b>180 Poin</b></div>
+          <div class="checkrow"><span>🎁 Voucher Diskon Rp 25.000</span><b>250 Poin</b></div>
+          <div class="checkrow"><span>👕 Merchandise Housepoint T-Shirt</span><b>500 Poin</b></div>
+        </div>
+
+        <div class="card">
+          <h3 class="cardtitle">Pelanggan Paling Loyal (Top Members)</h3>
+          <div class="cardsub">Member dengan frekuensi kunjungan tertinggi</div>
+          <div class="checkrow"><span>Nadia Putri</span><span class="pill">Platinum · 38 Kunjungan</span></div>
+          <div class="checkrow"><span>Rizky Pratama</span><span class="pill">Gold · 26 Kunjungan</span></div>
+          <div class="checkrow"><span>Dinda Maharani</span><span class="pill">Gold · 22 Kunjungan</span></div>
+          <div class="checkrow"><span>Budi Santoso</span><span class="pill warn">Silver · 14 Kunjungan</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. SETTINGS -->
+    <section class="page" id="settings">
+      <div class="heading">
+        <div>
+          <h2>Settings & Konfigurasi</h2>
+          <p>Pengaturan kedai kopi, integrasi Hermes AI, dan pengelolaan data lokal.</p>
+        </div>
+      </div>
+
+      <div class="grid three-col">
+        <div class="card">
+          <h3 class="cardtitle">Profil Kedai Kopi</h3>
+          <div class="cardsub">Informasi dasar kedai kopi Housepoint</div>
+          <div class="checkrow"><span>Nama Kedai</span><b>Housepoint Coffee</b></div>
+          <div class="checkrow"><span>Jam Buka</span><b>07.30 – 22.00 WIB</b></div>
+          <div class="checkrow"><span>Mata Uang</span><b>IDR (Rupiah)</b></div>
+          <div class="checkrow"><span>Role Akses</span><b>Administrator</b></div>
+        </div>
+
+        <div class="card">
+          <h3 class="cardtitle">Status Hermes AI Gateway</h3>
+          <div class="cardsub">Asisten cerdas operasional AI lokal</div>
+          <div class="checkrow"><span>Hermes URL</span><code id="settingsHermesUrl" style="font-size:11px">127.0.0.1:8642</code></div>
+          <div class="checkrow"><span>Port Server</span><code>3000</code></div>
+          <div class="checkrow"><span>Status</span><span class="pill" id="settingsHermesStatusPill">Mengecek...</span></div>
+          <div style="margin-top:14px">
+            <button class="btn sm light" onclick="checkHermesStatus(true)">↻ Tes Ulang AI</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="cardtitle">n8n & Spreadsheet Sync</h3>
+          <div class="cardsub">Sinkronisasi otomatis kasir ke Google Sheets</div>
+          <div class="checkrow"><span>Webhook URL</span><code style="font-size:10px">ghina1000.app.n8n.cloud</code></div>
+          <div class="checkrow"><span>Target Sheet</span><b>kasirhousepoint</b></div>
+          <div class="checkrow"><span>Auth Header</span><span class="pill">✓ x-housepoint-key</span></div>
+          <div class="checkrow"><span>Status</span><span class="pill" style="background:#ecfdf5;color:#047857">🟢 Otomatis Aktif</span></div>
+          <div style="margin-top:14px">
+            <button class="btn sm" onclick="testN8NConnection()">🧪 Tes Kirim Pesanan</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:20px">
+        <h3 class="cardtitle" style="color:var(--warn)">Manajemen Penyimpanan Data (Local Storage)</h3>
+        <p class="muted" style="font-size:12px;margin:6px 0 16px">Data menu, transaksi kasir, stok bahan baku, dan pengeluaran tersimpan rapi di browser Anda. Jika Anda ingin mengembalikan data ke format demo awal, gunakan tombol di bawah.</p>
+        <button class="btn danger" onclick="resetToDemoData()">↺ Reset Semua Data ke Demo Awal</button>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ================= MODALS ================= -->
+
+<!-- MODAL TAMBAH MENU -->
+<div class="modal-overlay" id="modalMenu">
+  <div class="modal-window">
+    <h3>Tambah Menu Baru</h3>
+    <p>Masukkan detail minuman atau makanan baru ke katalog Housepoint.</p>
+    <form id="formMenu" onsubmit="handleSaveMenu(event)">
+      <div class="form-group">
+        <label>Nama Menu</label>
+        <input type="text" id="menuName" required placeholder="Contoh: Caramel Macchiato">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Kategori</label>
+          <select id="menuCat" required>
+            <option value="Coffee">☕ Coffee</option>
+            <option value="Non-Coffee">🍵 Non-Coffee</option>
+            <option value="Pastry">🥐 Pastry</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Harga Jual (Rp)</label>
+          <input type="number" id="menuPrice" required placeholder="Contoh: 32000" min="1000">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ikon Emoji</label>
+          <select id="menuIcon">
+            <option value="☕">☕ Kopi Panas</option>
+            <option value="🧋" selected>🧋 Es Kopi Susu</option>
+            <option value="🥛">🥛 Latte / Susu</option>
+            <option value="🍵">🍵 Matcha / Teh</option>
+            <option value="🍫">🍫 Cokelat</option>
+            <option value="🥐">🥐 Croissant</option>
+            <option value="🍰">🍰 Pastry / Cake</option>
+            <option value="🧊">🧊 Cold Brew</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status Ketersediaan</label>
+          <select id="menuStatus">
+            <option value="Ready" selected>Tersedia (Ready)</option>
+            <option value="Sold Out">Habis (Sold Out)</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Deskripsi / Komposisi Singkat</label>
+        <input type="text" id="menuDesc" placeholder="Contoh: Double espresso, fresh milk, caramel syrup">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn light" onclick="closeAllModals()">Batal</button>
+        <button type="submit" class="btn">Simpan Menu</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL CATAT PESANAN (KASIR) -->
+<div class="modal-overlay" id="modalOrder">
+  <div class="modal-window">
+    <h3>Catat Pesanan Kasir</h3>
+    <p>Pilih menu yang dipesan pelanggan dan sistem akan otomatis menghitung totalnya.</p>
+    <form id="formOrder" onsubmit="handleSaveOrder(event)">
+      <div class="form-group">
+        <label>Nama Pelanggan</label>
+        <input type="text" id="orderCustomer" required placeholder="Contoh: Nadia Putri">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Pilih Menu</label>
+          <select id="orderSelectMenu" required onchange="calculateOrderTotal()"></select>
+        </div>
+        <div class="form-group">
+          <label>Jumlah (Qty)</label>
+          <input type="number" id="orderQty" value="1" min="1" max="50" required onchange="calculateOrderTotal()" oninput="calculateOrderTotal()">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Tipe Pesanan</label>
+          <select id="orderType">
+            <option value="Dine In" selected>Dine In (Makan di Tempat)</option>
+            <option value="Take Away">Take Away (Bungkus)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Metode Pembayaran</label>
+          <select id="orderPayment">
+            <option value="QRIS" selected>QRIS (GoPay/OVO/BCA)</option>
+            <option value="Cash">Tunai (Cash)</option>
+            <option value="Debit">Debit Card</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Total Pembayaran</label>
+        <input type="text" id="orderTotalPreview" readonly style="background:#f4f6f4;font-weight:bold;color:var(--green)">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn light" onclick="closeAllModals()">Batal</button>
+        <button type="submit" class="btn">Simpan Transaksi</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL TAMBAH INVENTORY -->
+<div class="modal-overlay" id="modalInventory">
+  <div class="modal-window">
+    <h3>Tambah Bahan Baku</h3>
+    <p>Catat stok bahan baku baru yang masuk ke gudang Housepoint.</p>
+    <form id="formInventory" onsubmit="handleSaveInventory(event)">
+      <div class="form-group">
+        <label>Nama Bahan Baku</label>
+        <input type="text" id="invName" required placeholder="Contoh: Arabica Coffee Beans">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Kategori Bahan</label>
+          <select id="invCat" required>
+            <option value="Coffee Beans" selected>Biji Kopi</option>
+            <option value="Dairy & Milk">Susu & Dairy</option>
+            <option value="Syrup & Sugar">Sirup & Gula</option>
+            <option value="Powder & Tea">Powder & Teh</option>
+            <option value="Packaging">Kemasan / Cup</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Satuan Unit</label>
+          <select id="invUnit" required>
+            <option value="kg" selected>kg</option>
+            <option value="liter">liter</option>
+            <option value="pcs">pcs</option>
+            <option value="botol">botol</option>
+            <option value="pack">pack</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Jumlah Stok Awal</label>
+          <input type="number" id="invQty" required placeholder="Contoh: 10" min="0">
+        </div>
+        <div class="form-group">
+          <label>Batas Minimum (Peringatan Stok)</label>
+          <input type="number" id="invMin" required placeholder="Contoh: 3" min="1">
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn light" onclick="closeAllModals()">Batal</button>
+        <button type="submit" class="btn">Simpan Bahan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL TAMBAH EXPENSES -->
+<div class="modal-overlay" id="modalExpense">
+  <div class="modal-window">
+    <h3>Catat Pengeluaran Baru</h3>
+    <p>Masukkan pengeluaran operasional kedai kopi.</p>
+    <form id="formExpense" onsubmit="handleSaveExpense(event)">
+      <div class="form-group">
+        <label>Keperluan / Nama Biaya</label>
+        <input type="text" id="expName" required placeholder="Contoh: Pembelian Es Batu Kristal 10 Sak">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Kategori Biaya</label>
+          <select id="expCat" required>
+            <option value="Bahan Baku" selected>Bahan Baku</option>
+            <option value="Operasional">Operasional Harian</option>
+            <option value="Utilitas">Utilitas (Listrik/Air/WiFi)</option>
+            <option value="Perlengkapan">Perlengkapan Toko</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Nominal Biaya (Rp)</label>
+          <input type="number" id="expAmount" required placeholder="Contoh: 150000" min="1000">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Tanggal Pengeluaran</label>
+        <input type="date" id="expDate" required>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn light" onclick="closeAllModals()">Batal</button>
+        <button type="submit" class="btn">Simpan Pengeluaran</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toastNotification">Data berhasil disimpan!</div>
+
+<!-- HOUSEPOINT AI CHAT PANEL -->
+<button class="ai-chat-launcher" id="aiChatLauncher" type="button" aria-label="Buka AI Assistant" title="Housepoint AI">
+  <span>✦</span>
+  <span class="ai-launcher-pulse" id="aiLauncherPulse"></span>
+</button>
+
+<section class="ai-chat-panel" id="aiChatPanel" aria-label="Housepoint AI Assistant">
+  <header class="ai-chat-head">
+    <div>
+      <strong>Housepoint AI</strong>
+      <small><span class="badge-dot" style="width:6px;height:6px"></span> <span id="aiChatStatusText">Terhubung ke Hermes AI</span></small>
+    </div>
+    <button class="ai-chat-close" id="aiChatClose" type="button" aria-label="Tutup chat">×</button>
+  </header>
+  <div class="ai-chat-messages" id="aiChatMessages" aria-live="polite">
+    <div class="ai-message bot">Halo! 👋 Aku Housepoint AI, asisten coffee shop yang terintegrasi dengan Hermes AI. Ada yang bisa kubantu seputar menu, resep kopi, manajemen stok bahan baku, HPP, atau promo kedai?</div>
+  </div>
+  <div class="ai-chat-suggestions" id="aiChatSuggestions">
+    <button type="button" data-prompt="Bagaimana cara mengelola stok bahan baku coffee shop?">📦 Manajemen Stok</button>
+    <button type="button" data-prompt="Beri ide promo menarik untuk meningkatkan penjualan kopi.">💡 Ide Promo</button>
+    <button type="button" data-prompt="Bagaimana cara menghitung HPP kopi susu kekinian?">💰 Hitung HPP</button>
+    <button type="button" data-prompt="Rekomendasikan resep espresso dan kopi susu signature.">☕ Resep Menu</button>
+  </div>
+  <div class="ai-typing" id="aiChatTyping" hidden>Housepoint AI sedang berpikir…</div>
+  <form class="ai-chat-form" id="aiChatForm">
+    <input class="ai-chat-input" id="aiChatInput" type="text" placeholder="Tulis pesan untuk Housepoint AI…" autocomplete="off" required>
+    <button class="ai-chat-send" id="aiChatSend" type="submit">Kirim</button>
+  </form>
+</section>
+
+<!-- APPLICATION JAVASCRIPT -->
+<script>
+// ==========================================
+// 1. DATA INITIALIZATION & LOCAL STORAGE
+// ==========================================
+const DEFAULT_MENUS = [
+  { id: 'M-1', name: 'Iced Aren Latte', category: 'Coffee', price: 32000, desc: 'Double espresso, fresh milk, gula aren organik', icon: '🧋', status: 'Ready' },
+  { id: 'M-2', name: 'Spanish Latte', category: 'Coffee', price: 35000, desc: 'Espresso lembut, condensed milk creamy, susu segar', icon: '🥛', status: 'Ready' },
+  { id: 'M-3', name: 'Americano', category: 'Coffee', price: 25000, desc: 'Double shot espresso dengan air mineral dingin/hangat', icon: '☕', status: 'Ready' },
+  { id: 'M-4', name: 'Matcha Cream Latte', category: 'Non-Coffee', price: 35000, desc: 'Pure Uji matcha pilihan, fresh milk, vanilla hint', icon: '🍵', status: 'Ready' },
+  { id: 'M-5', name: 'Chocolate Signature', category: 'Non-Coffee', price: 33000, desc: 'Dark chocolate blend pekat dengan fresh milk', icon: '🍫', status: 'Ready' },
+  { id: 'M-6', name: 'Butter Croissant', category: 'Pastry', price: 28000, desc: 'Pastry mentega Prancis, flaky, hangat dan renyah', icon: '🥐', status: 'Ready' }
+];
+
+const DEFAULT_ORDERS = [
+  { id: '#HP1028', customer: 'Nadia Putri', item: 'Iced Aren Latte × 2', total: 64000, payment: 'QRIS', type: 'Dine In', status: 'Completed', date: 'Hari ini, 15:30' },
+  { id: '#HP1027', customer: 'Rizky Pratama', item: 'Spanish Latte × 1', total: 35000, payment: 'Cash', type: 'Take Away', status: 'Preparing', date: 'Hari ini, 15:15' },
+  { id: '#HP1026', customer: 'Dinda Maharani', item: 'Matcha Cream Latte × 2', total: 70000, payment: 'Debit', type: 'Dine In', status: 'Completed', date: 'Hari ini, 14:45' }
+];
+
+const DEFAULT_INVENTORY = [
+  { id: 'INV-1', name: 'Arabica Coffee Beans', category: 'Coffee Beans', qty: 12, unit: 'kg', min: 4, lastUpdate: 'Hari ini' },
+  { id: 'INV-2', name: 'Fresh Milk Pasteurisasi', category: 'Dairy & Milk', qty: 8, unit: 'liter', min: 10, lastUpdate: 'Hari ini' },
+  { id: 'INV-3', name: 'Oat Milk Barista Edition', category: 'Dairy & Milk', qty: 2, unit: 'liter', min: 5, lastUpdate: 'Kemarin' },
+  { id: 'INV-4', name: 'Sirup Gula Aren Asli', category: 'Syrup & Sugar', qty: 6, unit: 'botol', min: 3, lastUpdate: 'Kemarin' },
+  { id: 'INV-5', name: 'Matcha Powder Premium', category: 'Powder & Tea', qty: 0, unit: 'kg', min: 1, lastUpdate: '3 hari lalu' },
+  { id: 'INV-6', name: 'Paper & Plastic Cup 12oz', category: 'Packaging', qty: 450, unit: 'pcs', min: 100, lastUpdate: 'Hari ini' }
+];
+
+const DEFAULT_EXPENSES = [
+  { id: 'EXP-1', name: 'Pembelian Biji Kopi Gayo 10kg', category: 'Bahan Baku', amount: 1250000, date: '2026-11-12' },
+  { id: 'EXP-2', name: 'Restock Fresh Milk 20 Liter', category: 'Bahan Baku', amount: 480000, date: '2026-11-11' },
+  { id: 'EXP-3', name: 'Pembelian Es Batu Kristal 10 Sak', category: 'Operasional', amount: 150000, date: '2026-11-10' },
+  { id: 'EXP-4', name: 'Tagihan Listrik & AC Toko', category: 'Utilitas', amount: 1300000, date: '2026-11-05' }
+];
+
+function getStored(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch (e) {
+    return fallback;
+  }
+}
+function setStored(key, val) {
+  try {
+    localStorage.setItem(key, JSON.stringify(val));
+  } catch (e) {}
+}
+
+let menus = getStored('hp_menus', DEFAULT_MENUS);
+let orders = getStored('hp_orders', DEFAULT_ORDERS);
+let inventory = getStored('hp_inventory', DEFAULT_INVENTORY);
+let expenses = getStored('hp_expenses', DEFAULT_EXPENSES);
+
+// FORMATTERS
+const formatRp = (n) => 'Rp ' + Number(n || 0).toLocaleString('id-ID');
+const formatNum = (n) => Number(n || 0).toLocaleString('id-ID');
+
+function showToast(msg) {
+  const el = document.getElementById('toastNotification');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// ==========================================
+// 2. AUTHENTICATION & LOGIN
+// ==========================================
+const DEMO_EMAIL = 'admin@housepoint.com';
+const DEMO_PASSWORD = 'housepoint123';
+
+function enterApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainApp').classList.add('logged-in');
+  initAllModules();
+}
+
+function logout() {
+  sessionStorage.removeItem('housepointLoggedIn');
+  document.getElementById('mainApp').classList.remove('logged-in');
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginForm').reset();
+  document.getElementById('loginError').style.display = 'none';
+}
+
+function togglePassword() {
+  const p = document.getElementById('loginPassword');
+  const b = document.querySelector('.password-toggle');
+  p.type = p.type === 'password' ? 'text' : 'password';
+  b.textContent = p.type === 'password' ? 'Lihat' : 'Sembunyikan';
+}
+
+document.getElementById('loginForm').addEventListener('submit', function (e) {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value;
+  if (email.toLowerCase() === DEMO_EMAIL.toLowerCase() && password === DEMO_PASSWORD) {
+    sessionStorage.setItem('housepointLoggedIn', 'yes');
+    document.getElementById('loginError').style.display = 'none';
+    enterApp();
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+  }
+});
+
+if (sessionStorage.getItem('housepointLoggedIn') === 'yes') {
+  enterApp();
+}
+
+// ==========================================
+// 3. NAVIGATION & CHARTS
+// ==========================================
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.toggle('active', p.id === id));
+  document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('active', b.dataset.page === id));
+}
+
+document.querySelectorAll('.nav button').forEach(b => {
+  b.addEventListener('click', () => {
+    if (b.dataset.page) showPage(b.dataset.page);
+  });
+});
+
+document.getElementById('todayDate').textContent = new Date().toLocaleDateString('id-ID', {
+  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+});
+
+const salesData = [2.2, 2.8, 2.5, 3.8, 3.4, 4.6, 5.1];
+const dayLabels = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+
+function drawBarChart(containerId) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = '';
+  const max = Math.max(...salesData);
+  salesData.forEach((v, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'barwrap';
+    const heightPercent = Math.round((v / max) * 82);
+    wrap.innerHTML = `<div class="bar" style="height:${heightPercent}%" title="Rp ${v} jt"></div><div class="barlabel">${dayLabels[i]}</div>`;
+    el.appendChild(wrap);
+  });
+}
+
+// ==========================================
+// 4. MENU MODULE (CRUD & FILTER)
+// ==========================================
+let currentMenuFilter = 'All';
+
+function filterMenuCategory(cat) {
+  currentMenuFilter = cat;
+  document.querySelectorAll('#menuCatFilters button').forEach(b => {
+    b.classList.toggle('active', b.textContent.includes(cat) || (cat === 'All' && b.textContent.includes('Semua')));
+  });
+  renderMenuList();
+}
+
+function renderMenuList() {
+  const container = document.getElementById('menuGridContainer');
+  const search = (document.getElementById('menuSearchInput').value || '').toLowerCase();
+  container.innerHTML = '';
+
+  const filtered = menus.filter(m => {
+    const matchCat = currentMenuFilter === 'All' || m.category === currentMenuFilter;
+    const matchSearch = m.name.toLowerCase().includes(search) || (m.desc || '').toLowerCase().includes(search);
+    return matchCat && matchSearch;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div class="card" style="grid-column:1/-1;text-align:center;padding:36px;color:var(--muted)">Tidak ada menu yang sesuai kriteria.</div>`;
+    return;
+  }
+
+  filtered.forEach(m => {
+    const card = document.createElement('div');
+    card.className = 'card product-card';
+    card.innerHTML = `
+      <div class="product-img">
+        <span class="pill product-cat-tag ${m.category === 'Coffee' ? '' : 'warn'}">${m.category}</span>
+        ${m.icon || '☕'}
+      </div>
+      <div class="product-body">
+        <h3>${m.name}</h3>
+        <div class="product-desc">${m.desc || 'Menu spesial racikan Housepoint Coffee.'}</div>
+        <div class="product-foot">
+          <div class="product-price">${formatRp(m.price)}</div>
+          <button class="btn-delete-card" onclick="deleteMenu('${m.id}')" title="Hapus menu">🗑</button>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+
+  // Update order dropdown options
+  updateOrderMenuDropdown();
+  updateDashboardKPIs();
+}
+
+function openMenuModal() {
+  document.getElementById('formMenu').reset();
+  document.getElementById('modalMenu').classList.add('show');
+}
+
+function handleSaveMenu(e) {
+  e.preventDefault();
+  const name = document.getElementById('menuName').value.trim();
+  const category = document.getElementById('menuCat').value;
+  const price = parseInt(document.getElementById('menuPrice').value, 10);
+  const icon = document.getElementById('menuIcon').value;
+  const status = document.getElementById('menuStatus').value;
+  const desc = document.getElementById('menuDesc').value.trim();
+
+  const newMenu = {
+    id: 'M-' + Date.now(),
+    name, category, price, icon, status, desc
+  };
+
+  menus.unshift(newMenu);
+  setStored('hp_menus', menus);
+  closeAllModals();
+  renderMenuList();
+  showToast(`Menu "${name}" berhasil ditambahkan!`);
+}
+
+function deleteMenu(id) {
+  if (!confirm('Yakin ingin menghapus menu ini dari katalog?')) return;
+  menus = menus.filter(m => m.id !== id);
+  setStored('hp_menus', menus);
+  renderMenuList();
+  showToast('Menu berhasil dihapus.');
+}
+
+// ==========================================
+// 5. ORDERS MODULE (CRUD & STATUS TOGGLE)
+// ==========================================
+let currentOrderStatusFilter = 'All';
+
+function filterOrderStatus(status) {
+  currentOrderStatusFilter = status;
+  document.getElementById('orderFilterAll').classList.toggle('active', status === 'All');
+  document.getElementById('orderFilterPrep').classList.toggle('active', status === 'Preparing');
+  document.getElementById('orderFilterComp').classList.toggle('active', status === 'Completed');
+  renderOrdersTable();
+}
+
+function updateOrderMenuDropdown() {
+  const sel = document.getElementById('orderSelectMenu');
+  if (!sel) return;
+  sel.innerHTML = '';
+  menus.forEach(m => {
+    const opt = document.createElement('option');
+    opt.value = m.name;
+    opt.dataset.price = m.price;
+    opt.textContent = `${m.name} (${formatRp(m.price)})`;
+    sel.appendChild(opt);
+  });
+  calculateOrderTotal();
+}
+
+function calculateOrderTotal() {
+  const sel = document.getElementById('orderSelectMenu');
+  const qtyInput = document.getElementById('orderQty');
+  const preview = document.getElementById('orderTotalPreview');
+  if (!sel || !sel.selectedOptions.length) return;
+  const price = parseInt(sel.selectedOptions[0].dataset.price || '0', 10);
+  const qty = parseInt(qtyInput.value || '1', 10);
+  const total = price * qty;
+  preview.value = formatRp(total);
+}
+
+function renderOrdersTable() {
+  const tbody = document.querySelector('#mainOrdersTable tbody');
+  const dashTbody = document.querySelector('#dashRecentOrdersTable tbody');
+  const search = (document.getElementById('orderSearchInput').value || '').toLowerCase();
+  tbody.innerHTML = '';
+  if (dashTbody) dashTbody.innerHTML = '';
+
+  const filtered = orders.filter(o => {
+    const matchStatus = currentOrderStatusFilter === 'All' || o.status === currentOrderStatusFilter;
+    const matchSearch = o.customer.toLowerCase().includes(search) || o.id.toLowerCase().includes(search) || o.item.toLowerCase().includes(search);
+    return matchStatus && matchSearch;
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="10" style="text-align:center;padding:24px;color:var(--muted)">Belum ada pesanan yang sesuai filter.</td></tr>`;
+  } else {
+    filtered.forEach(o => {
+      const isCompleted = o.status === 'Completed';
+      const isSynced = o.synced === true;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${o.id}</strong></td>
+        <td>${o.customer}</td>
+        <td><small class="muted">${o.date || 'Hari ini'}</small></td>
+        <td>${o.item}</td>
+        <td><span class="pill light">${o.type || 'Dine In'}</span></td>
+        <td><strong>${formatRp(o.total)}</strong></td>
+        <td>${o.payment}</td>
+        <td>
+          <span class="pill btn-toggle ${isCompleted ? '' : 'warn'}" onclick="toggleOrderStatus('${o.id}')" title="Klik untuk ubah status pesanan">
+            ${isCompleted ? '✓ Completed' : '⏳ Preparing'}
+          </span>
+        </td>
+        <td>
+          ${isSynced 
+            ? '<span class="pill" style="background:#ecfdf5;color:#047857;font-size:10px" title="Tercatat di Google Sheets">✓ Synced</span>' 
+            : `<button class="btn sm light" onclick="syncSpecificOrder('${o.id}')" style="font-size:10.5px;padding:4px 8px" title="Kirim ke Google Sheets">↻ Kirim</button>`
+          }
+        </td>
+        <td style="text-align:right">
+          <button class="btn-delete-card" onclick="deleteOrder('${o.id}')" title="Hapus transaksi">🗑</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  // Populate Dashboard recent table (up to 5 recent)
+  if (dashTbody) {
+    orders.slice(0, 5).forEach(o => {
+      const isCompleted = o.status === 'Completed';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${o.id}</strong></td>
+        <td>${o.customer}</td>
+        <td>${o.item}</td>
+        <td><strong>${formatRp(o.total)}</strong></td>
+        <td><span class="pill ${isCompleted ? '' : 'warn'}">${o.payment}</span></td>
+        <td><span class="pill ${isCompleted ? '' : 'warn'}">${o.status}</span></td>
+      `;
+      dashTbody.appendChild(tr);
+    });
+  }
+
+  updateDashboardKPIs();
+}
+
+function openOrderModal() {
+  document.getElementById('formOrder').reset();
+  document.getElementById('orderQty').value = 1;
+  updateOrderMenuDropdown();
+  document.getElementById('modalOrder').classList.add('show');
+}
+
+function handleSaveOrder(e) {
+  e.preventDefault();
+  const customer = document.getElementById('orderCustomer').value.trim();
+  const sel = document.getElementById('orderSelectMenu');
+  const menuName = sel.value;
+  const unitPrice = parseInt(sel.selectedOptions[0].dataset.price || '0', 10);
+  const qty = parseInt(document.getElementById('orderQty').value, 10);
+  const type = document.getElementById('orderType').value;
+  const payment = document.getElementById('orderPayment').value;
+  const total = unitPrice * qty;
+
+  const now = new Date();
+  const dateFormatted = now.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' +
+                        now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+  const orderNum = orders.length + 1029;
+  const newOrder = {
+    id: '#HP' + orderNum,
+    orderId: '#HP' + orderNum,
+    customer,
+    menuName,
+    item: `${menuName} × ${qty}`,
+    unitPrice,
+    qty,
+    total,
+    payment,
+    type,
+    status: 'Preparing',
+    date: dateFormatted,
+    synced: false
+  };
+
+  orders.unshift(newOrder);
+  setStored('hp_orders', orders);
+  closeAllModals();
+  renderOrdersTable();
+  showToast(`Pesanan #${newOrder.id} dicatat. Mengirim ke Spreadsheet...`);
+
+  // Kirim otomatis ke n8n webhook -> Google Sheets
+  syncOrderToN8N(newOrder);
+}
+
+// ==========================================
+// SINKRONISASI n8n & GOOGLE SHEETS
+// ==========================================
+async function syncOrderToN8N(order) {
+  if (!order) return;
+  try {
+    const res = await fetch('http://127.0.0.1:3000/api/sync-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(order)
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (res.ok && data.success) {
+      order.synced = true;
+      setStored('hp_orders', orders);
+      renderOrdersTable();
+      showToast(`✓ Pesanan ${order.id} (${order.customer}) berhasil masuk ke Google Spreadsheet!`);
+    } else {
+      console.warn('Gagal sync via server.js, mencoba kirim langsung ke webhook n8n:', data);
+      await tryDirectN8NSync(order);
+    }
+  } catch (err) {
+    console.warn('Server lokal offline, fallback langsung ke webhook n8n:', err);
+    await tryDirectN8NSync(order);
+  }
+}
+
+async function tryDirectN8NSync(order) {
+  try {
+    const res = await fetch('https://ghina1000.app.n8n.cloud/webhook/housepoint-order', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-housepoint-key': 'dedd191c576fb6ad51ec822fcafe4dee4586408573efbd55682ba134361913fb'
+      },
+      body: JSON.stringify({
+        id: order.id,
+        orderId: order.id,
+        date: order.date,
+        tanggal: order.date,
+        customer: order.customer,
+        namaPelanggan: order.customer,
+        item: order.menuName || order.item,
+        menu: order.menuName || order.item,
+        unitPrice: Number(order.unitPrice || 0),
+        hargaSatuan: Number(order.unitPrice || 0),
+        qty: Number(order.qty || 1),
+        quantity: Number(order.qty || 1),
+        total: Number(order.total || 0),
+        type: order.type || 'Dine In',
+        tipePesanan: order.type || 'Dine In',
+        payment: order.payment || 'QRIS',
+        metodePembayaran: order.payment || 'QRIS',
+        status: order.status || 'Preparing'
+      })
+    });
+
+    if (res.ok) {
+      order.synced = true;
+      setStored('hp_orders', orders);
+      renderOrdersTable();
+      showToast(`✓ Pesanan ${order.id} berhasil masuk ke Spreadsheet (Direct)!`);
+    } else {
+      showToast(`Pesanan tersimpan di lokal (Gagal sync n8n status ${res.status})`);
+    }
+  } catch (e) {
+    showToast(`Pesanan tersimpan di lokal (n8n offline)`);
+  }
+}
+
+function syncSpecificOrder(id) {
+  const o = orders.find(x => x.id === id);
+  if (o) syncOrderToN8N(o);
+}
+
+async function syncAllOrders() {
+  const unsynced = orders.filter(o => !o.synced);
+  if (unsynced.length === 0) {
+    showToast('Semua pesanan sudah tersinkronkan ke Spreadsheet!');
+    return;
+  }
+  showToast(`Menyinkronkan ${unsynced.length} pesanan ke Google Sheets...`);
+  for (const o of unsynced) {
+    await syncOrderToN8N(o);
+  }
+}
+
+async function testN8NConnection() {
+  showToast('Mengirim pesanan uji coba ke Spreadsheet...');
+  const testOrder = {
+    id: '#HP-TEST-' + Math.floor(Math.random() * 900 + 100),
+    customer: 'Ghina Customer',
+    menuName: 'Iced Aren Latte',
+    item: 'Iced Aren Latte × 1',
+    unitPrice: 32000,
+    qty: 1,
+    total: 32000,
+    type: 'Dine In',
+    payment: 'QRIS',
+    status: 'Completed',
+    date: new Date().toLocaleDateString('id-ID') + ' ' + new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
+  };
+  await syncOrderToN8N(testOrder);
+}
+
+function toggleOrderStatus(id) {
+  const o = orders.find(x => x.id === id);
+  if (!o) return;
+  o.status = o.status === 'Completed' ? 'Preparing' : 'Completed';
+  setStored('hp_orders', orders);
+  renderOrdersTable();
+  showToast(`Status pesanan ${o.id} diubah ke ${o.status}.`);
+}
+
+function deleteOrder(id) {
+  if (!confirm('Hapus transaksi pesanan ini?')) return;
+  orders = orders.filter(o => o.id !== id);
+  setStored('hp_orders', orders);
+  renderOrdersTable();
+  showToast('Pesanan berhasil dihapus.');
+}
+
+// ==========================================
+// 6. INVENTORY MODULE (CRUD & QUICK RESTOCK)
+// ==========================================
+function renderInventoryTable() {
+  const tbody = document.querySelector('#mainInventoryTable tbody');
+  const search = (document.getElementById('invSearchInput').value || '').toLowerCase();
+  tbody.innerHTML = '';
+
+  const filtered = inventory.filter(i => {
+    return i.name.toLowerCase().includes(search) || i.category.toLowerCase().includes(search);
+  });
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--muted)">Tidak ada bahan baku yang cocok.</td></tr>`;
+    return;
+  }
+
+  filtered.forEach(item => {
+    let pillClass = 'Good';
+    let pillColor = '';
+    if (item.qty === 0) {
+      pillClass = 'Out of Stock';
+      pillColor = 'red';
+    } else if (item.qty <= item.min) {
+      pillClass = 'Low Stock';
+      pillColor = 'warn';
+    }
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${item.name}</strong></td>
+      <td><span class="pill light">${item.category}</span></td>
+      <td><b style="font-size:14px">${item.qty}</b> ${item.unit}</td>
+      <td><span class="muted">min. ${item.min} ${item.unit}</span></td>
+      <td><span class="pill ${pillColor}">${pillClass}</span></td>
+      <td><small class="muted">${item.lastUpdate || 'Hari ini'}</small></td>
+      <td style="text-align:right">
+        <button class="btn sm light" onclick="quickRestock('${item.id}', 10)" title="Tambah 10 stok">+10 Restock</button>
+        <button class="btn-delete-card" onclick="deleteInventory('${item.id}')" title="Hapus bahan">🗑</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  updateInventoryKPIs();
+}
+
+function openInventoryModal() {
+  document.getElementById('formInventory').reset();
+  document.getElementById('modalInventory').classList.add('show');
+}
+
+function handleSaveInventory(e) {
+  e.preventDefault();
+  const name = document.getElementById('invName').value.trim();
+  const category = document.getElementById('invCat').value;
+  const qty = parseInt(document.getElementById('invQty').value, 10);
+  const unit = document.getElementById('invUnit').value;
+  const min = parseInt(document.getElementById('invMin').value, 10);
+
+  const newItem = {
+    id: 'INV-' + Date.now(),
+    name, category, qty, unit, min,
+    lastUpdate: 'Hari ini'
+  };
+
+  inventory.unshift(newItem);
+  setStored('hp_inventory', inventory);
+  closeAllModals();
+  renderInventoryTable();
+  showToast(`Bahan baku "${name}" berhasil ditambahkan!`);
+}
+
+function quickRestock(id, amount) {
+  const item = inventory.find(i => i.id === id);
+  if (!item) return;
+  item.qty += amount;
+  item.lastUpdate = 'Hari ini, ' + new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+  setStored('hp_inventory', inventory);
+  renderInventoryTable();
+  showToast(`Stok ${item.name} berhasil ditambah +${amount} ${item.unit}!`);
+}
+
+function deleteInventory(id) {
+  if (!confirm('Hapus bahan baku ini dari inventaris?')) return;
+  inventory = inventory.filter(i => i.id !== id);
+  setStored('hp_inventory', inventory);
+  renderInventoryTable();
+  showToast('Bahan baku berhasil dihapus.');
+}
+
+function updateInventoryKPIs() {
+  document.getElementById('invTotalItems').textContent = inventory.length;
+  const lowCount = inventory.filter(i => i.qty > 0 && i.qty <= i.min).length;
+  const zeroCount = inventory.filter(i => i.qty === 0).length;
+  document.getElementById('invLowCount').textContent = lowCount;
+  document.getElementById('invZeroCount').textContent = zeroCount;
+  document.getElementById('dashLowStockCount').textContent = lowCount + zeroCount;
+}
+
+// ==========================================
+// 7. EXPENSES MODULE (CRUD)
+// ==========================================
+function renderExpensesTable() {
+  const tbody = document.querySelector('#expensesTable tbody');
+  tbody.innerHTML = '';
+
+  let total = 0, raw = 0, ops = 0, util = 0;
+
+  expenses.forEach(e => {
+    total += e.amount;
+    if (e.category === 'Bahan Baku') raw += e.amount;
+    else if (e.category === 'Operasional') ops += e.amount;
+    else if (e.category === 'Utilitas') util += e.amount;
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${e.date}</td>
+      <td><strong>${e.name}</strong></td>
+      <td><span class="pill light">${e.category}</span></td>
+      <td><strong style="color:var(--red)">${formatRp(e.amount)}</strong></td>
+      <td style="text-align:right">
+        <button class="btn-delete-card" onclick="deleteExpense('${e.id}')" title="Hapus catatan">🗑</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('totalExpenseVal').textContent = formatRp(total);
+  document.getElementById('expRawVal').textContent = formatRp(raw);
+  document.getElementById('expOpsVal').textContent = formatRp(ops);
+  document.getElementById('expUtilVal').textContent = formatRp(util);
+}
+
+function openExpenseModal() {
+  document.getElementById('formExpense').reset();
+  document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('modalExpense').classList.add('show');
+}
+
+function handleSaveExpense(e) {
+  e.preventDefault();
+  const name = document.getElementById('expName').value.trim();
+  const category = document.getElementById('expCat').value;
+  const amount = parseInt(document.getElementById('expAmount').value, 10);
+  const date = document.getElementById('expDate').value;
+
+  const newExp = {
+    id: 'EXP-' + Date.now(),
+    name, category, amount, date
+  };
+
+  expenses.unshift(newExp);
+  setStored('hp_expenses', expenses);
+  closeAllModals();
+  renderExpensesTable();
+  showToast('Pengeluaran berhasil dicatat!');
+}
+
+function deleteExpense(id) {
+  if (!confirm('Hapus catatan pengeluaran ini?')) return;
+  expenses = expenses.filter(e => e.id !== id);
+  setStored('hp_expenses', expenses);
+  renderExpensesTable();
+  showToast('Pengeluaran dihapus.');
+}
+
+// ==========================================
+// 8. SALES FUNNEL MODULE
+// ==========================================
+const funnelSets = {
+  today: [320, 240, 96, 72, 56],
+  week: [2400, 1800, 720, 540, 420],
+  month: [9800, 7350, 2940, 2205, 1710]
+};
+const funnelStages = [
+  'T1 · Pengunjung Kedai',
+  'T2 · Melihat Menu',
+  'T3 · Memilih Menu & Keranjang',
+  'T4 · Menuju Kasir / Checkout',
+  'T5 · Transaksi Berhasil'
+];
+const tierWidths = [100, 84, 68, 52, 38];
+
+function updateFunnelUI() {
+  const period = document.getElementById('funnelPeriod').value;
+  const vals = funnelSets[period] || funnelSets.week;
+
+  const visitors = vals[0];
+  const paidOrders = vals[4];
+  const conversionRate = (paidOrders / visitors) * 100;
+  const dropoffRate = 100 - conversionRate;
+
+  document.getElementById('funnelVisitors').textContent = formatNum(visitors);
+  document.getElementById('funnelOrders').textContent = formatNum(paidOrders);
+  document.getElementById('funnelConversion').textContent = conversionRate.toFixed(1) + '%';
+  document.getElementById('funnelDropoff').textContent = dropoffRate.toFixed(1) + '%';
+
+  let html = '';
+  vals.forEach((v, i) => {
+    const ratio = i ? (v / vals[i - 1]) * 100 : 100;
+    const rateText = i ? `${ratio.toFixed(1)}% dari T${i}` : '100% total pengunjung';
+    html += `
+      <div class="funnel-tier-wrapper">
+        <div class="funnel-tier" style="width:${tierWidths[i]}%">
+          <span class="tier-stage">${funnelStages[i]}</span>
+          <strong>${formatNum(v)}</strong>
+          <span class="tier-rate">${rateText}</span>
+        </div>
+      </div>
+    `;
+  });
+  document.getElementById('funnelRows').innerHTML = html;
+
+  document.getElementById('metricMenuRate').textContent = ((vals[1] / vals[0]) * 100).toFixed(1) + '%';
+  document.getElementById('metricCartRate').textContent = ((vals[2] / vals[1]) * 100).toFixed(1) + '%';
+  document.getElementById('metricPayRate').textContent = ((vals[4] / vals[3]) * 100).toFixed(1) + '%';
+}
+
+// ==========================================
+// 9. DASHBOARD KPIS CALCULATION
+// ==========================================
+function updateDashboardKPIs() {
+  // Total Revenue from all orders
+  const totalRevenue = orders.reduce((sum, o) => sum + (o.total || 0), 0) + 8450000;
+  document.getElementById('dashTotalRevenue').textContent = formatRp(totalRevenue);
+  document.getElementById('dashTotalOrders').textContent = formatNum(orders.length + 183);
+  document.getElementById('dashTotalMenus').textContent = menus.length;
+}
+
+// ==========================================
+// 10. MODAL UTILITIES & RESET DATA
+// ==========================================
+function closeAllModals() {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('show'));
+}
+
+window.addEventListener('click', e => {
+  if (e.target.classList.contains('modal-overlay')) {
+    closeAllModals();
+  }
+});
+
+function resetToDemoData() {
+  if (!confirm('Apakah Anda yakin ingin mereset seluruh data kembali ke setelan awal demo?')) return;
+  localStorage.removeItem('hp_menus');
+  localStorage.removeItem('hp_orders');
+  localStorage.removeItem('hp_inventory');
+  localStorage.removeItem('hp_expenses');
+  menus = [...DEFAULT_MENUS];
+  orders = [...DEFAULT_ORDERS];
+  inventory = [...DEFAULT_INVENTORY];
+  expenses = [...DEFAULT_EXPENSES];
+  initAllModules();
+  showToast('Seluruh data berhasil di-reset ke format demo awal.');
+}
+
+// ==========================================
+// 11. HOUSEPOINT AI CHAT (HERMES CONNECTED)
+// ==========================================
+const chatLauncher = document.getElementById('aiChatLauncher');
+const chatPanel = document.getElementById('aiChatPanel');
+const chatClose = document.getElementById('aiChatClose');
+const chatForm = document.getElementById('aiChatForm');
+const chatInput = document.getElementById('aiChatInput');
+const chatMessages = document.getElementById('aiChatMessages');
+const chatSend = document.getElementById('aiChatSend');
+const chatTyping = document.getElementById('aiChatTyping');
+const chatSuggestions = document.getElementById('aiChatSuggestions');
+const chatHistory = [];
+
+function toggleChat(force) {
+  const open = typeof force === 'boolean' ? force : !chatPanel.classList.contains('open');
+  chatPanel.classList.toggle('open', open);
+  if (open) chatInput.focus();
+}
+
+chatLauncher.addEventListener('click', () => toggleChat());
+chatClose.addEventListener('click', () => toggleChat(false));
+
+chatSuggestions.addEventListener('click', e => {
+  const btn = e.target.closest('button[data-prompt]');
+  if (!btn) return;
+  chatInput.value = btn.dataset.prompt;
+  chatForm.requestSubmit();
+});
+
+function appendChatMessage(text, sender, isError = false) {
+  const div = document.createElement('div');
+  div.className = `ai-message ${sender} ${isError ? 'error' : ''}`.trim();
+  div.textContent = text;
+  chatMessages.appendChild(div);
+  chatMessages.scrollTop = chatMessages.scrollHeight;
+  return div;
+}
+
+chatForm.addEventListener('submit', async e => {
+  e.preventDefault();
+  const message = chatInput.value.trim();
+  if (!message) return;
+
+  appendChatMessage(message, 'user');
+  chatInput.value = '';
+  chatSend.disabled = true;
+  chatTyping.hidden = false;
+  chatSuggestions.style.display = 'none';
+
+  try {
+    const res = await fetch('http://127.0.0.1:3000/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, history: chatHistory })
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || `Server merespons status ${res.status}`);
+
+    const reply = data.reply || data.message || 'Maaf, belum ada respons dari AI.';
+    appendChatMessage(reply, 'bot');
+    chatHistory.push({ role: 'user', content: message }, { role: 'assistant', content: reply });
+    if (chatHistory.length > 12) chatHistory.splice(0, chatHistory.length - 12);
+  } catch (err) {
+    appendChatMessage(
+      'Maaf, terjadi kendala koneksi ke server Housepoint AI. Pastikan server.js berjalan (npm start di port 3000).',
+      'bot',
+      true
+    );
+  } finally {
+    chatTyping.hidden = true;
+    chatSend.disabled = false;
+    chatInput.focus();
+  }
+});
+
+// PING STATUS HERMES AI
+async function checkHermesStatus(showToastMsg = false) {
+  const badgeText = document.getElementById('sidebarHermesText');
+  const chatStatus = document.getElementById('aiChatStatusText');
+  const settingsPill = document.getElementById('settingsHermesStatusPill');
+
+  try {
+    const res = await fetch('http://127.0.0.1:3000/api/status', { signal: AbortSignal.timeout(3000) });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.hermesGateway) {
+        if (badgeText) badgeText.textContent = 'Hermes AI Terhubung';
+        if (chatStatus) chatStatus.textContent = 'Terhubung ke Hermes AI (Port 8642)';
+        if (settingsPill) {
+          settingsPill.className = 'pill';
+          settingsPill.textContent = '✓ Hermes Gateway Terhubung';
+        }
+        if (showToastMsg) showToast('Hermes AI Gateway terhubung dengan aktif!');
+        return;
+      }
+    }
+  } catch (e) {}
+
+  if (badgeText) badgeText.textContent = 'Hermes AI Standby';
+  if (chatStatus) chatStatus.textContent = 'Hermes AI Standby (Mode Cerdas)';
+  if (settingsPill) {
+    settingsPill.className = 'pill warn';
+    settingsPill.textContent = 'Standby (Port 3000 Aktif)';
+  }
+  if (showToastMsg) showToast('Server aktif di port 3000. Hermes Gateway standby.');
+}
+
+// ==========================================
+// 12. INITIALIZATION
+// ==========================================
+function initAllModules() {
+  renderMenuList();
+  renderOrdersTable();
+  renderInventoryTable();
+  renderExpensesTable();
+  updateFunnelUI();
+  drawBarChart('dashChart');
+  drawBarChart('reportsChart');
+  checkHermesStatus();
+}
+
+// Initialize when DOM is ready
+window.addEventListener('DOMContentLoaded', () => {
+  if (sessionStorage.getItem('housepointLoggedIn') === 'yes') {
+    initAllModules();
+  }
+});
+</script>
+</body>
+</html>

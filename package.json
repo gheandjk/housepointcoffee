@@ -1,0 +1,22 @@
+{
+  "name": "housepoint-coffee-management",
+  "version": "1.1.0",
+  "description": "Housepoint Coffee Shop Management System with Hermes AI Integration",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "coffee-shop",
+    "pos",
+    "management",
+    "hermes-ai"
+  ],
+  "author": "Housepoint",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0"
+  }
+}
